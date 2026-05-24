@@ -30,15 +30,26 @@ include = [
 # Opt into `auth` / `llm` only when needed.
 default = ["ui"]
 ui = []
-auth = ["dep:tokio", "dep:reqwest", "dep:serde", "dep:serde_json", "dep:url", "dep:axum"]
+auth = ["dep:tokio", "dep:reqwest", "dep:serde", "dep:serde_json", "dep:url", "dep:axum", "dep:anyhow", "dep:chrono", "dep:dirs-next", "dep:webbrowser", "dep:rand", "dep:base64", "dep:sha2"]
 llm = ["auth"]
 
 [dependencies]
 # Heavy deps gated behind `auth` / `llm` features so the bare `ui`
 # build stays no_std-compatible and zero-dep.
-tokio = { version = "1", features = ["macros", "rt-multi-thread", "fs", "net"], optional = true }
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "fs", "net", "sync", "time"], optional = true }
 reqwest = { version = "0.12", features = ["json"], optional = true }
 serde = { version = "1", features = ["derive"], optional = true }
 serde_json = { version = "1", optional = true }
 url = { version = "2", optional = true }
 axum = { version = "0.7", optional = true }
+anyhow = { version = "1", optional = true }
+chrono = { version = "0.4", default-features = false, features = ["clock", "serde"], optional = true }
+dirs-next = { version = "2", optional = true }
+webbrowser = { version = "1", optional = true }
+rand = { version = "0.8", optional = true }
+base64 = { version = "0.22", optional = true }
+sha2 = { version = "0.10", optional = true }
+
+[dev-dependencies]
+tempfile = "3"
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "test-util"] }
