@@ -1,0 +1,365 @@
+/*
+ * smooai-brand — canonical CSS for SmooAI Rust desktop apps.
+ *
+ * Every consumer (smooblue, observability-studio, …) embeds this exact file
+ * via `smooai_brand::STYLES`. Changes flow through a single PR + version bump
+ * here, so apps can pin a version and choose when to absorb design updates.
+ *
+ * Conventions:
+ *   - Tokens are OKLCH for perceptual consistency across themes.
+ *   - Semantic tokens (--background, --foreground, ...) point at brand tokens.
+ *   - Component classes use BEM-ish naming (.btn, .btn--primary, .card,
+ *     .modal__sheet) so apps can scope their own component CSS without
+ *     clashing.
+ *   - Dark mode is the only mode; brand is dark-first.
+ *   - Hardcode no hex in consumer apps — always reference a token here.
+ */
+
+:root {
+    /* ===== Brand palette (OKLCH) ===== */
+    --color-smooai-orange: oklch(0.769 0.164 71);          /* #f49f0a */
+    --color-smooai-red: oklch(0.712 0.181 22.4);           /* #ff6b6c */
+    --color-smooai-green: oklch(0.657 0.112 194.8);        /* #00a6a6 */
+    --color-smooai-blue-300: oklch(0.803 0.074 230.9);
+    --color-smooai-blue-400: oklch(0.725 0.102 233.4);
+    --color-smooai-blue-500: oklch(0.55 0.13 233);
+    --color-smooai-dark-blue: oklch(0.13 0.043 265.1);     /* #020618 */
+    --color-smooai-dark-blue-700: oklch(0.303 0.154 265.8);
+    --color-smooai-dark-blue-850: oklch(0.177 0.074 266);
+    --color-smooai-white: oklch(0.984 0.003 247.9);
+    --color-smooai-gray-400: oklch(0.715 0 89.9);
+
+    /* ===== Semantic tokens — components should use these ===== */
+    --background: oklch(0.145 0.014 265);
+    --foreground: var(--color-smooai-white);
+    --card: oklch(0.205 0.015 265);
+    --muted: oklch(0.27 0.01 260);
+    --muted-foreground: var(--color-smooai-gray-400);
+    --accent: var(--color-smooai-orange);
+    --border: oklch(0.3 0.008 260);
+    --input: oklch(0.38 0.006 260);
+    --ring: oklch(0.657 0.112 194.8);
+
+    /* Sidebar specifics — pulled into a separate slot so apps can have a
+       different rail tint without losing the panel/card recipe. */
+    --sidebar: var(--color-smooai-dark-blue-850);
+    --sidebar-border: var(--border);
+
+    /* Signature brand gradient — primary CTAs, FABs, monogram badge */
+    --gradient-brand: linear-gradient(135deg,
+        var(--color-smooai-orange) 0%,
+        var(--color-smooai-red) 100%);
+
+    /* Geometry */
+    --radius: 10px;
+    --radius-sm: 6px;
+    --radius-lg: 14px;
+    --radius-xl: 18px;
+
+    /* Spacing rhythm */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 20px;
+    --space-6: 24px;
+    --space-8: 32px;
+
+    /* Typography */
+    --font-sans: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "SF Mono", "JetBrains Mono", "Menlo", "Consolas", ui-monospace, monospace;
+
+    /* Sizes */
+    --rail-width: 240px;
+    --status-bar-height: 36px;
+}
+
+/* ===========================================================
+ *  Reset + base
+ * =========================================================== */
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html,
+body {
+    height: 100%;
+    overflow: hidden;
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.4;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
+button {
+    font: inherit;
+    color: inherit;
+    background: none;
+    border: 0;
+    cursor: pointer;
+}
+
+input {
+    font: inherit;
+    color: inherit;
+}
+
+/* Counters / IDs — tabular numerals look much tidier in dense lists. */
+.tabular-nums {
+    font-variant-numeric: tabular-nums;
+}
+
+/* ===========================================================
+ *  Scrollbars
+ * =========================================================== */
+
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: var(--color-smooai-dark-blue-700);
+}
+
+/* ===========================================================
+ *  Card surface
+ * =========================================================== */
+
+.card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+}
+
+.card--elevated {
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.55);
+}
+
+.card__row:hover {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+/* ===========================================================
+ *  Buttons
+ * =========================================================== */
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    border: 1px solid transparent;
+    transition:
+        background-color 120ms ease,
+        border-color 120ms ease,
+        opacity 120ms ease,
+        transform 120ms ease;
+    cursor: pointer;
+}
+
+.btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.btn--primary {
+    background: var(--gradient-brand);
+    color: var(--color-smooai-white);
+    font-weight: 600;
+    padding: 10px 16px;
+    border-radius: 8px;
+}
+.btn--primary:hover:not(:disabled) {
+    opacity: 0.92;
+}
+.btn--primary:active:not(:disabled) {
+    transform: translateY(1px);
+}
+
+.btn--ghost {
+    background: transparent;
+    color: var(--muted-foreground);
+}
+.btn--ghost:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--foreground);
+}
+
+.btn--outline {
+    background: transparent;
+    border-color: var(--border);
+    color: var(--foreground);
+}
+.btn--outline:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: var(--ring);
+}
+
+.btn--icon {
+    padding: 7px;
+    width: 30px;
+    height: 30px;
+}
+
+.btn--lg {
+    padding: 10px 18px;
+    font-size: 14px;
+    border-radius: var(--radius-lg);
+}
+
+/* ===========================================================
+ *  Floating Action Button (one per app, bottom-right)
+ * =========================================================== */
+
+.fab {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--gradient-brand);
+    color: var(--color-smooai-white);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow:
+        0 12px 28px rgba(244, 159, 10, 0.35),
+        0 4px 8px rgba(0, 0, 0, 0.25);
+    transition:
+        transform 140ms ease,
+        box-shadow 140ms ease;
+    z-index: 60;
+}
+.fab:hover {
+    transform: translateY(-2px);
+}
+
+/* ===========================================================
+ *  Modal sheet
+ * =========================================================== */
+
+.modal__backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(2, 6, 24, 0.6);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-6);
+    animation: smooai-fade-in 140ms ease;
+}
+
+.modal__sheet {
+    width: 100%;
+    max-width: 560px;
+    max-width: min(560px, calc(100vw - 48px));
+    max-height: calc(100vh - var(--space-8));
+    overflow: auto;
+    padding: 18px 20px 16px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.55);
+}
+
+@keyframes smooai-fade-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+/* ===========================================================
+ *  Sidebar / nav rail (vertical icon strip)
+ * =========================================================== */
+
+.rail {
+    width: 56px;
+    flex-shrink: 0;
+    background: var(--sidebar);
+    border-right: 1px solid var(--sidebar-border);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: var(--space-3) 0;
+    gap: var(--space-2);
+}
+
+.rail__btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted-foreground);
+    transition:
+        background-color 120ms ease,
+        color 120ms ease;
+}
+
+.rail__btn:hover {
+    background: var(--color-smooai-dark-blue-700);
+    color: var(--foreground);
+}
+
+.rail__btn--active {
+    background: var(--color-smooai-blue-500);
+    color: var(--color-smooai-white);
+}
+
+/* ===========================================================
+ *  Brand monogram badge
+ * =========================================================== */
+
+.brand-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--gradient-brand);
+    color: var(--color-smooai-white);
+    border-radius: 50%;
+}
+
+.brand-badge svg {
+    fill: var(--color-smooai-white);
+    fill-rule: evenodd;
+}
+
+/* ===========================================================
+ *  Action-icon semantic colors (hover only)
+ * =========================================================== */
+
+.icon-action {
+    color: var(--muted-foreground);
+    transition: color 120ms ease;
+}
+.icon-action--reply:hover {
+    color: var(--color-smooai-blue-300);
+}
+.icon-action--repost:hover {
+    color: var(--color-smooai-green);
+}
+.icon-action--like:hover {
+    color: var(--color-smooai-red);
+}

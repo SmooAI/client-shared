@@ -1,0 +1,44 @@
+[package]
+name = "smooai-client-shared"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "SmooAI's cross-runtime client shared library — design tokens, monogram, auth, and llm session primitives shared across every SmooAI Rust app (smooblue, observability-studio, th, th admin, …)."
+repository = "https://github.com/SmooAI/client-shared"
+homepage = "https://github.com/SmooAI/client-shared"
+keywords = ["smooai", "design-system", "auth", "llm", "client"]
+categories = ["gui", "authentication", "config"]
+readme = "README.md"
+authors = ["SmooAI <brent@smoo.ai>"]
+# Cargo can't pull files from outside the package root by default; we
+# explicitly enumerate the cross-language `shared/` assets we want
+# included so `cargo package` produces a self-contained tarball.
+include = [
+    "Cargo.toml",
+    "README.md",
+    "src/**/*.rs",
+    "../shared/styles.css",
+    "../shared/monogram.svg",
+    "../shared/tokens.json",
+    "../LICENSE",
+]
+
+[features]
+# Default to the lightweight `ui` module so existing smooai-ui
+# consumers (smooblue, observability-studio) get the same dependency
+# tree they had before — no tokio, no reqwest, still no_std-friendly.
+# Opt into `auth` / `llm` only when needed.
+default = ["ui"]
+ui = []
+auth = ["dep:tokio", "dep:reqwest", "dep:serde", "dep:serde_json", "dep:url", "dep:axum"]
+llm = ["auth"]
+
+[dependencies]
+# Heavy deps gated behind `auth` / `llm` features so the bare `ui`
+# build stays no_std-compatible and zero-dep.
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "fs", "net"], optional = true }
+reqwest = { version = "0.12", features = ["json"], optional = true }
+serde = { version = "1", features = ["derive"], optional = true }
+serde_json = { version = "1", optional = true }
+url = { version = "2", optional = true }
+axum = { version = "0.7", optional = true }
