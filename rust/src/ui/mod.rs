@@ -113,8 +113,17 @@ mod tests {
 
     #[test]
     fn semantic_classes_exist() {
-        for cls in [".btn", ".btn--primary", ".btn--ghost", ".card", ".fab",
-                    ".modal__sheet", ".rail", ".rail__btn", ".brand-badge"] {
+        for cls in [
+            ".btn",
+            ".btn--primary",
+            ".btn--ghost",
+            ".card",
+            ".fab",
+            ".modal__sheet",
+            ".rail",
+            ".rail__btn",
+            ".brand-badge",
+        ] {
             assert!(STYLES.contains(cls), "missing class {cls}");
         }
     }

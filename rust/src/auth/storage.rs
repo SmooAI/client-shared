@@ -105,9 +105,12 @@ impl CredentialsStore {
     /// provided.
     pub fn default_m2m() -> Result<Self> {
         if let Ok(explicit) = std::env::var("SMOOAI_AUTH_FILE") {
-            return Ok(Self { path: PathBuf::from(explicit) });
+            return Ok(Self {
+                path: PathBuf::from(explicit),
+            });
         }
-        let home = dirs_next::home_dir().context("$HOME not set; pass SMOOAI_AUTH_FILE to override")?;
+        let home =
+            dirs_next::home_dir().context("$HOME not set; pass SMOOAI_AUTH_FILE to override")?;
         Ok(Self {
             path: home.join(".smooth").join("auth").join("smooai.json"),
         })
@@ -122,9 +125,12 @@ impl CredentialsStore {
     /// not provided.
     pub fn default_user() -> Result<Self> {
         if let Ok(explicit) = std::env::var("SMOOAI_USER_AUTH_FILE") {
-            return Ok(Self { path: PathBuf::from(explicit) });
+            return Ok(Self {
+                path: PathBuf::from(explicit),
+            });
         }
-        let home = dirs_next::home_dir().context("$HOME not set; pass SMOOAI_USER_AUTH_FILE to override")?;
+        let home = dirs_next::home_dir()
+            .context("$HOME not set; pass SMOOAI_USER_AUTH_FILE to override")?;
         Ok(Self {
             path: home.join(".smooth").join("auth").join("smooai-user.json"),
         })
@@ -151,11 +157,14 @@ impl CredentialsStore {
     pub fn load(&self) -> Result<Option<Credentials>> {
         match std::fs::read_to_string(&self.path) {
             Ok(text) => {
-                let creds: Credentials = serde_json::from_str(&text).with_context(|| format!("parse credentials at {}", self.path.display()))?;
+                let creds: Credentials = serde_json::from_str(&text)
+                    .with_context(|| format!("parse credentials at {}", self.path.display()))?;
                 Ok(Some(creds))
             }
             Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(None),
-            Err(e) => Err(e).with_context(|| format!("read credentials at {}", self.path.display())),
+            Err(e) => {
+                Err(e).with_context(|| format!("read credentials at {}", self.path.display()))
+            }
         }
     }
 
@@ -167,7 +176,8 @@ impl CredentialsStore {
     /// Disk / permission failures bubble up unchanged.
     pub fn save(&self, creds: &Credentials) -> Result<()> {
         if let Some(parent) = self.path.parent() {
-            std::fs::create_dir_all(parent).with_context(|| format!("mkdir {}", parent.display()))?;
+            std::fs::create_dir_all(parent)
+                .with_context(|| format!("mkdir {}", parent.display()))?;
         }
         let tmp = self.path.with_extension("json.tmp");
         let json = serde_json::to_string_pretty(creds).context("serialize credentials")?;
@@ -176,9 +186,11 @@ impl CredentialsStore {
         {
             use std::os::unix::fs::PermissionsExt;
             let perm = std::fs::Permissions::from_mode(0o600);
-            std::fs::set_permissions(&tmp, perm).with_context(|| format!("chmod 600 {}", tmp.display()))?;
+            std::fs::set_permissions(&tmp, perm)
+                .with_context(|| format!("chmod 600 {}", tmp.display()))?;
         }
-        std::fs::rename(&tmp, &self.path).with_context(|| format!("rename {} -> {}", tmp.display(), self.path.display()))?;
+        std::fs::rename(&tmp, &self.path)
+            .with_context(|| format!("rename {} -> {}", tmp.display(), self.path.display()))?;
         Ok(())
     }
 
@@ -191,7 +203,9 @@ impl CredentialsStore {
         match std::fs::remove_file(&self.path) {
             Ok(()) => Ok(()),
             Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(()),
-            Err(e) => Err(e).with_context(|| format!("delete credentials at {}", self.path.display())),
+            Err(e) => {
+                Err(e).with_context(|| format!("delete credentials at {}", self.path.display()))
+            }
         }
     }
 }
@@ -271,7 +285,11 @@ mod tests {
         use std::os::unix::fs::PermissionsExt;
         let (_dir, store) = tmp_store();
         store.save(&fixture()).expect("save");
-        let mode = std::fs::metadata(store.path()).unwrap().permissions().mode() & 0o777;
+        let mode = std::fs::metadata(store.path())
+            .unwrap()
+            .permissions()
+            .mode()
+            & 0o777;
         assert_eq!(mode, 0o600, "expected 0600, got {mode:o}");
     }
 
@@ -285,7 +303,11 @@ mod tests {
 
         let m2m = CredentialsStore::default_m2m().expect("m2m path");
         let user = CredentialsStore::default_user().expect("user path");
-        assert_ne!(m2m.path(), user.path(), "m2m and user stores must use distinct paths");
+        assert_ne!(
+            m2m.path(),
+            user.path(),
+            "m2m and user stores must use distinct paths"
+        );
         assert!(m2m.path().ends_with("smooai.json"));
         assert!(user.path().ends_with("smooai-user.json"));
 

@@ -84,7 +84,11 @@ struct TokenRequest<'a> {
 /// `access_token` in the body. 4xx surfaces the upstream error
 /// message verbatim so the user sees "invalid_client",
 /// "invalid_grant", etc. as-is.
-pub async fn client_credentials_grant(http: &reqwest::Client, client_id: &str, client_secret: &str) -> Result<Credentials> {
+pub async fn client_credentials_grant(
+    http: &reqwest::Client,
+    client_id: &str,
+    client_secret: &str,
+) -> Result<Credentials> {
     let url = token_url();
     let req = TokenRequest {
         grant_type: "client_credentials",
@@ -92,14 +96,21 @@ pub async fn client_credentials_grant(http: &reqwest::Client, client_id: &str, c
         client_id,
         client_secret,
     };
-    let resp = http.post(&url).form(&req).send().await.with_context(|| format!("POST {url}"))?;
+    let resp = http
+        .post(&url)
+        .form(&req)
+        .send()
+        .await
+        .with_context(|| format!("POST {url}"))?;
     let status = resp.status();
     let text = resp.text().await.unwrap_or_default();
     if !status.is_success() {
         anyhow::bail!("token exchange returned HTTP {status}: {text}");
     }
-    let body: TokenResponse = serde_json::from_str(&text).with_context(|| format!("parse token response: {text}"))?;
-    let expires_at = Utc::now() + chrono::Duration::seconds(i64::try_from(body.expires_in).unwrap_or(3600));
+    let body: TokenResponse =
+        serde_json::from_str(&text).with_context(|| format!("parse token response: {text}"))?;
+    let expires_at =
+        Utc::now() + chrono::Duration::seconds(i64::try_from(body.expires_in).unwrap_or(3600));
     Ok(Credentials {
         access_token: body.access_token,
         refresh_token: body.refresh_token,

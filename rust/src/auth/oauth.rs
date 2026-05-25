@@ -117,7 +117,9 @@ pub async fn login(http: &reqwest::Client, cfg: &OAuthConfig) -> Result<Credenti
     let code_challenge = pkce_challenge(&code_verifier);
 
     // ── Localhost listener ────────────────────────────────────
-    let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.context("bind localhost listener")?;
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:0")
+        .await
+        .context("bind localhost listener")?;
     let local_addr: SocketAddr = listener.local_addr().context("listener.local_addr")?;
     let port = local_addr.port();
     let redirect_to = format!("http://localhost:{port}/cb");
@@ -125,7 +127,9 @@ pub async fn login(http: &reqwest::Client, cfg: &OAuthConfig) -> Result<Credenti
     let (tx, rx) = oneshot::channel::<CallbackOutcome>();
     let tx = Arc::new(Mutex::new(Some(tx)));
 
-    let app = Router::new().route("/cb", get(callback)).with_state(tx.clone());
+    let app = Router::new()
+        .route("/cb", get(callback))
+        .with_state(tx.clone());
 
     let server = tokio::spawn(async move {
         // Serve until either the callback fires (tx consumed → caller
@@ -149,7 +153,10 @@ pub async fn login(http: &reqwest::Client, cfg: &OAuthConfig) -> Result<Credenti
 
     // ── Await callback ────────────────────────────────────────
     let timeout = cfg.timeout.unwrap_or(DEFAULT_LOGIN_TIMEOUT);
-    let outcome = tokio::time::timeout(timeout, rx).await.context("timed out waiting for OAuth callback")?.context("callback channel closed")?;
+    let outcome = tokio::time::timeout(timeout, rx)
+        .await
+        .context("timed out waiting for OAuth callback")?
+        .context("callback channel closed")?;
 
     server.abort();
 
@@ -169,7 +176,10 @@ struct CallbackParams {
     error_description: Option<String>,
 }
 
-async fn callback(State(tx): State<Arc<Mutex<Option<oneshot::Sender<CallbackOutcome>>>>>, Query(params): Query<CallbackParams>) -> (StatusCode, Html<&'static str>) {
+async fn callback(
+    State(tx): State<Arc<Mutex<Option<oneshot::Sender<CallbackOutcome>>>>>,
+    Query(params): Query<CallbackParams>,
+) -> (StatusCode, Html<&'static str>) {
     let outcome = if let Some(code) = params.code {
         CallbackOutcome::Code(code)
     } else if let Some(err) = params.error {
@@ -199,7 +209,11 @@ fn build_authorize_url(cfg: &OAuthConfig, redirect_to: &str, code_challenge: &st
     if let Some(p) = &cfg.provider {
         params.push(("provider", p.clone()));
     }
-    let qs: String = params.iter().map(|(k, v)| format!("{k}={}", urlencode(v))).collect::<Vec<_>>().join("&");
+    let qs: String = params
+        .iter()
+        .map(|(k, v)| format!("{k}={}", urlencode(v)))
+        .collect::<Vec<_>>()
+        .join("&");
     format!("{base}/auth/v1/authorize?{qs}")
 }
 
@@ -220,21 +234,36 @@ struct TokenUser {
     email: Option<String>,
 }
 
-async fn exchange_code(http: &reqwest::Client, cfg: &OAuthConfig, code: &str, code_verifier: &str) -> Result<Credentials> {
+async fn exchange_code(
+    http: &reqwest::Client,
+    cfg: &OAuthConfig,
+    code: &str,
+    code_verifier: &str,
+) -> Result<Credentials> {
     let base = cfg.supabase_url.trim_end_matches('/');
     let url = format!("{base}/auth/v1/token?grant_type=pkce");
     let body = serde_json::json!({
         "auth_code": code,
         "code_verifier": code_verifier,
     });
-    let resp = http.post(&url).header("apikey", &cfg.supabase_anon_key).header("Content-Type", "application/json").json(&body).send().await.with_context(|| format!("POST {url}"))?;
+    let resp = http
+        .post(&url)
+        .header("apikey", &cfg.supabase_anon_key)
+        .header("Content-Type", "application/json")
+        .json(&body)
+        .send()
+        .await
+        .with_context(|| format!("POST {url}"))?;
     let status = resp.status();
     let text = resp.text().await.unwrap_or_default();
     if !status.is_success() {
         anyhow::bail!("Supabase code exchange returned HTTP {status}: {text}");
     }
-    let body: TokenResponse = serde_json::from_str(&text).with_context(|| format!("parse Supabase token response: {text}"))?;
-    let expires_at = body.expires_in.map(|s| Utc::now() + chrono::Duration::seconds(i64::try_from(s).unwrap_or(3600)));
+    let body: TokenResponse = serde_json::from_str(&text)
+        .with_context(|| format!("parse Supabase token response: {text}"))?;
+    let expires_at = body
+        .expires_in
+        .map(|s| Utc::now() + chrono::Duration::seconds(i64::try_from(s).unwrap_or(3600)));
     let user_display = body.user.and_then(|u| u.email.clone().or(Some(u.id)));
     Ok(Credentials {
         access_token: body.access_token,
@@ -289,7 +318,11 @@ mod tests {
     #[test]
     fn code_verifier_length_is_in_pkce_range() {
         let v = generate_code_verifier();
-        assert!(v.len() >= 43 && v.len() <= 128, "verifier len {} out of PKCE range", v.len());
+        assert!(
+            v.len() >= 43 && v.len() <= 128,
+            "verifier len {} out of PKCE range",
+            v.len()
+        );
     }
 
     #[test]
