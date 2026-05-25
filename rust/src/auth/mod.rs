@@ -24,6 +24,7 @@
 
 pub mod m2m;
 pub mod oauth;
+pub mod password;
 pub mod storage;
 
 pub use storage::{Credentials, CredentialsStore};
