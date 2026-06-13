@@ -1,25 +1,18 @@
 <p align="center">
-  <a href="https://smoo.ai"><img src="https://smoo.ai/images/logo/logo.svg" alt="Smoo AI" width="220" /></a>
-</p>
-
-<h1 align="center">@smooai/client-shared</h1>
-
-<p align="center">
-  <strong>One cross-runtime home for the primitives every Smoo AI client app needs identically — design tokens, auth, and LLM access — regardless of language.</strong>
+  <a href="https://smoo.ai"><img src=".github/banner.png" alt="@smooai/client-shared — Shared primitives for every Smoo AI client" width="100%" /></a>
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Smoo_AI-platform-00A6A6?style=flat-square" alt="Smoo AI">
-  <img src="https://img.shields.io/badge/license-MIT-F49F0A?style=flat-square" alt="license">
+  <a href="https://smoo.ai/open-source"><img src="https://img.shields.io/badge/Smoo_AI-platform-00A6A6?style=for-the-badge&labelColor=020618" alt="Smoo AI"></a>
+  <img src="https://img.shields.io/badge/license-MIT-F49F0A?style=for-the-badge&labelColor=020618" alt="license">
+</p>
+
+<p align="center">
   <img src="https://img.shields.io/badge/Rust-reference%20impl-FF6B6C?style=flat-square" alt="Rust reference implementation">
 </p>
 
 <p align="center">
-  <a href="#why-one-crate-not-many">Features</a> ·
-  <a href="#install">Install</a> ·
-  <a href="#feature-flags">Usage</a> ·
-  <a href="#migrating-from-smooai-ui">Migrating</a> ·
-  <a href="#part-of-smoo-ai">Platform</a>
+  <a href="#why-one-crate-not-many"><b>Features</b></a> &nbsp;·&nbsp; <a href="#install"><b>Install</b></a> &nbsp;·&nbsp; <a href="#feature-flags"><b>Usage</b></a> &nbsp;·&nbsp; <a href="#migrating-from-smooai-ui"><b>Migrating</b></a> &nbsp;·&nbsp; <a href="#part-of-smoo-ai"><b>Platform</b></a>
 </p>
 
 ---
@@ -123,11 +116,10 @@ warning. Yanks after the cycle.
 
 ## Part of Smoo AI
 
-`@smooai/client-shared` is part of the [Smoo AI](https://smoo.ai) platform — an
-AI-powered business platform with AI built into every product. It underpins the
-Smoo AI client apps and CLIs, and sits alongside infrastructure packages like
-[@smooai/config](https://github.com/SmooAI/config) and
-[@smooai/logger](https://github.com/SmooAI/logger).
+`@smooai/client-shared` is built and open-sourced by **[Smoo AI](https://smoo.ai)** — the AI-powered business platform with AI built into every product: CRM, customer support, campaigns, field service, observability, and developer tools.
+
+- 🧰 **More open source from Smoo AI** — [smoo.ai/open-source](https://smoo.ai/open-source)
+- 🧩 **Sibling repos** — [smooblue](https://github.com/SmooAI/smooblue) + observability-studio (consumers), [@smooai/smooth](https://github.com/SmooAI/smooth) (the `th` CLI), [@smooai/config](https://github.com/SmooAI/config), [@smooai/logger](https://github.com/SmooAI/logger)
 
 ## License
 
