@@ -1,19 +1,37 @@
-# @smooai/client-shared
+<p align="center">
+  <a href="https://smoo.ai"><img src="https://smoo.ai/images/logo/logo.svg" alt="Smoo AI" width="220" /></a>
+</p>
 
-SmooAI's **cross-runtime client shared library** — the single home for primitives
-every SmooAI client app needs identically, regardless of language.
+<h1 align="center">@smooai/client-shared</h1>
 
-This repo absorbs and supersedes the standalone [`@smooai/ui`](https://github.com/SmooAI/ui)
-crate. `ui` is now one *module* among siblings (`auth`, `llm`, future) inside
-a single `smooai-client-shared` Rust crate, with matching `@smooai/client-shared`
-npm / NuGet / PyPI packages planned.
+<p align="center">
+  <strong>One cross-runtime home for the primitives every Smoo AI client app needs identically — design tokens, auth, and LLM access — regardless of language.</strong>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Smoo_AI-platform-00A6A6?style=flat-square" alt="Smoo AI">
+  <img src="https://img.shields.io/badge/license-MIT-F49F0A?style=flat-square" alt="license">
+  <img src="https://img.shields.io/badge/Rust-reference%20impl-FF6B6C?style=flat-square" alt="Rust reference implementation">
+</p>
+
+<p align="center">
+  <a href="#why-one-crate-not-many">Features</a> ·
+  <a href="#install">Install</a> ·
+  <a href="#feature-flags">Usage</a> ·
+  <a href="#migrating-from-smooai-ui">Migrating</a> ·
+  <a href="#part-of-smoo-ai">Platform</a>
+</p>
+
+---
+
+> The single source of truth for the things every Smoo AI client — `smooblue`, observability-studio, the `th` CLI — reimplements otherwise. This repo absorbs and supersedes the standalone [`@smooai/ui`](https://github.com/SmooAI/ui) crate: `ui` is now one *module* among siblings (`auth`, `llm`, future) inside a single `smooai-client-shared` Rust crate, with matching `@smooai/client-shared` npm / NuGet / PyPI packages planned.
 
 ## Why one crate, not many
 
-A SmooAI Rust client (smooblue, observability-studio, `th`, `th admin`, …)
+A Smoo AI Rust client (smooblue, observability-studio, `th`, `th admin`, …)
 typically needs the same three things:
 
-1. **Design tokens + monogram** — so the UI looks like SmooAI.
+1. **Design tokens + monogram** — so the UI looks like Smoo AI.
 2. **Auth** — Supabase user OAuth (browser login) AND M2M `client_credentials`
    grant (service accounts), with one shared on-disk `CredentialsStore`.
 3. **LLM access** — exchanges a user session JWT for an org-scoped
@@ -21,18 +39,20 @@ typically needs the same three things:
    TPM budget.
 
 Each of these has been re-implemented in every consumer at least once. This
-crate makes them one dependency:
+crate makes them one dependency.
+
+## Install
 
 ```toml
 smooai-client-shared = { version = "0.1", features = ["ui", "auth"] }
 ```
 
-## Feature flags
-
 The `ui` feature is the default and **inherits the same dependency tree as the
 old `smooai-ui` crate** — zero runtime deps, `no_std`-compatible. Smooblue and
 observability-studio can swap `smooai-ui` for `smooai-client-shared` without
 pulling any new transitive dependencies.
+
+## Feature flags
 
 | Feature | Adds | Pulls |
 |---|---|---|
@@ -101,6 +121,20 @@ warning. Yanks after the cycle.
 - `smooblue`, `observability-studio` — Dioxus desktop apps; consume
   `client-shared::ui`.
 
+## Part of Smoo AI
+
+`@smooai/client-shared` is part of the [Smoo AI](https://smoo.ai) platform — an
+AI-powered business platform with AI built into every product. It underpins the
+Smoo AI client apps and CLIs, and sits alongside infrastructure packages like
+[@smooai/config](https://github.com/SmooAI/config) and
+[@smooai/logger](https://github.com/SmooAI/logger).
+
 ## License
 
 MIT — see [`LICENSE`](LICENSE).
+
+---
+
+<p align="center">
+  Built by <a href="https://smoo.ai"><strong>Smoo AI</strong></a> — AI built into every product.
+</p>
