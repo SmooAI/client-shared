@@ -16,6 +16,13 @@
 //!   and exchange them for an org-scoped bearer. Permission scope: whatever
 //!   the org grants the client (typically just its own org's resources).
 //!
+//! - **`refresh`** — Supabase `refresh_token` grant. Exchanges a stored
+//!   refresh token for a fresh access token (Supabase rotates the refresh
+//!   token on every exchange, so the new one must be persisted). Lets a
+//!   long-running process — the Big Smooth daemon in particular — keep a
+//!   session alive without re-prompting. `should_refresh` reports the
+//!   5-minute-ahead window so callers can renew before the wire call.
+//!
 //! - **`storage`** — The shared on-disk `CredentialsStore` for both flows.
 //!   By convention user-OAuth tokens go to `~/.smooth/auth/smooai-user.json`
 //!   and M2M tokens go to `~/.smooth/auth/smooai.json`, so a single host
@@ -25,6 +32,7 @@
 pub mod m2m;
 pub mod oauth;
 pub mod password;
+pub mod refresh;
 pub mod storage;
 
 pub use storage::{Credentials, CredentialsStore};
