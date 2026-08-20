@@ -15,52 +15,23 @@ pub const STYLES: &str = include_str!("../../../shared/styles.css");
 /// backdrop.
 pub const MONOGRAM_SVG: &str = include_str!("../../../shared/monogram.svg");
 
-/// Brand + semantic token *values* as `&'static str`, for code paths
-/// that need a colour outside of CSS (custom-painted egui widgets,
-/// native menu chrome, chart libraries, etc.). The single source of
-/// truth is the CSS in [`STYLES`]; these constants are mirrored from
-/// it and validated by the `tokens_match_css` test below.
+/// Brand + semantic token *values*, for code paths that need a colour,
+/// radius, spacing step, or font stack outside of CSS (custom-painted egui
+/// widgets, native menu chrome, chart libraries, etc.).
+///
+/// **Generated** at build time from
+/// [`shared/tokens.json`](https://github.com/SmooAI/client-shared/blob/main/shared/tokens.json)
+/// by `shared/tokens_codegen.rs` — nobody hand-writes these, so a token cannot
+/// exist in the design system and be missing here. `shared/tokens_css_check.rs`
+/// then asserts each one equals the resolved value of its custom property in
+/// [`STYLES`], and that every colour the CSS declares has a token.
 pub mod tokens {
-    /// Brand orange — primary CTA stop, accent.
-    pub const SMOOAI_ORANGE: &str = "oklch(0.769 0.164 71)";
-    /// Brand red — destructive, "like" affordance.
-    pub const SMOOAI_RED: &str = "oklch(0.712 0.181 22.4)";
-    /// Brand green — confirm / "repost" affordance / focus ring.
-    pub const SMOOAI_GREEN: &str = "oklch(0.657 0.112 194.8)";
-    /// Lightest brand blue — reply hover.
-    pub const SMOOAI_BLUE_300: &str = "oklch(0.803 0.074 230.9)";
-    /// Mid brand blue.
-    pub const SMOOAI_BLUE_400: &str = "oklch(0.725 0.102 233.4)";
-    /// Active nav-rail item background.
-    pub const SMOOAI_BLUE_500: &str = "oklch(0.55 0.13 233)";
-    /// Brand dark blue — base background.
-    pub const SMOOAI_DARK_BLUE: &str = "oklch(0.13 0.043 265.1)";
-    /// Sidebar tint.
-    pub const SMOOAI_DARK_BLUE_850: &str = "oklch(0.177 0.074 266)";
-    /// Hover on rail items.
-    pub const SMOOAI_DARK_BLUE_700: &str = "oklch(0.303 0.154 265.8)";
-    /// Brand white.
-    pub const SMOOAI_WHITE: &str = "oklch(0.984 0.003 247.9)";
-    /// Muted text.
-    pub const SMOOAI_GRAY_400: &str = "oklch(0.715 0 89.9)";
+    include!(concat!(env!("OUT_DIR"), "/tokens.rs"));
 
-    /// Default page background.
-    pub const BACKGROUND: &str = "oklch(0.145 0.014 265)";
-    /// Default text color.
-    pub const FOREGROUND: &str = SMOOAI_WHITE;
-    /// Card surface background.
-    pub const CARD: &str = "oklch(0.205 0.015 265)";
-    /// Border / divider.
-    pub const BORDER: &str = "oklch(0.3 0.008 260)";
-
-    /// Signature brand gradient — gradient-as-string for `background: …;`.
-    /// Note that CSS doesn't accept gradients in inline `color:` — this is
-    /// for `background` and SVG paint only.
-    pub const GRADIENT_BRAND: &str =
-        "linear-gradient(135deg, oklch(0.769 0.164 71) 0%, oklch(0.712 0.181 22.4) 100%)";
-
-    /// Default radius for cards + buttons (matches `--radius` in CSS).
-    pub const RADIUS_PX: u16 = 10;
+    /// The default corner radius, as used by cards and buttons. Retained as an
+    /// alias of [`RADIUS_MD_PX`] so consumers pinned to the pre-codegen name
+    /// keep compiling.
+    pub const RADIUS_PX: u16 = RADIUS_MD_PX;
 }
 
 #[cfg(test)]
@@ -81,35 +52,9 @@ mod tests {
         assert!(MONOGRAM_SVG.contains("fill=\"currentColor\""));
     }
 
-    /// Validate that every token value in the `tokens` module is also
-    /// present in the CSS, so the two sources of truth can't silently
-    /// drift.
-    #[test]
-    fn tokens_match_css() {
-        let css = STYLES;
-        for (name, value) in [
-            ("SMOOAI_ORANGE", tokens::SMOOAI_ORANGE),
-            ("SMOOAI_RED", tokens::SMOOAI_RED),
-            ("SMOOAI_GREEN", tokens::SMOOAI_GREEN),
-            ("SMOOAI_BLUE_300", tokens::SMOOAI_BLUE_300),
-            ("SMOOAI_BLUE_400", tokens::SMOOAI_BLUE_400),
-            ("SMOOAI_BLUE_500", tokens::SMOOAI_BLUE_500),
-            ("SMOOAI_DARK_BLUE", tokens::SMOOAI_DARK_BLUE),
-            ("SMOOAI_DARK_BLUE_850", tokens::SMOOAI_DARK_BLUE_850),
-            ("SMOOAI_DARK_BLUE_700", tokens::SMOOAI_DARK_BLUE_700),
-            ("SMOOAI_WHITE", tokens::SMOOAI_WHITE),
-            ("SMOOAI_GRAY_400", tokens::SMOOAI_GRAY_400),
-            ("BACKGROUND", tokens::BACKGROUND),
-            ("CARD", tokens::CARD),
-            ("BORDER", tokens::BORDER),
-        ] {
-            assert!(
-                css.contains(value),
-                "token {name} = {value:?} not found in shared/styles.css — Rust \
-                 constants and CSS have drifted",
-            );
-        }
-    }
+    // The token <-> CSS cross-check (both directions) lives in `shared/`, so
+    // SmooAI/client-shared and SmooAI/ui run the identical assertions.
+    include!("../../../shared/tokens_css_check.rs");
 
     #[test]
     fn semantic_classes_exist() {
@@ -123,6 +68,10 @@ mod tests {
             ".rail",
             ".rail__btn",
             ".brand-badge",
+            ".input",
+            ".input--lg",
+            ".input-error",
+            ".input-hint",
         ] {
             assert!(STYLES.contains(cls), "missing class {cls}");
         }

@@ -329,6 +329,66 @@ input {
 }
 
 /* ===========================================================
+ *  Text inputs + textareas
+ *
+ *  Single canonical form-field style so every consumer's auth screen,
+ *  search bar, settings field, and compose box look like they came from
+ *  the same product. Apply `.input` to <input>, <textarea>, or
+ *  <select>. Modifier `.input--lg` for hero / login-card inputs.
+ * =========================================================== */
+
+.input {
+    width: 100%;
+    padding: 8px 12px;
+    background: var(--input);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--foreground);
+    font: inherit;
+    font-size: 14px;
+    line-height: 1.45;
+    outline: none;
+    transition:
+        border-color 120ms ease,
+        background-color 120ms ease;
+}
+
+.input::placeholder {
+    color: var(--muted-foreground);
+}
+
+.input:focus {
+    border-color: var(--ring);
+}
+
+.input:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.input--lg {
+    padding: 10px 14px;
+    font-size: 15px;
+}
+
+textarea.input {
+    min-height: 96px;
+    resize: vertical;
+}
+
+.input-error {
+    color: var(--color-smooai-red);
+    font-size: 13px;
+    margin-top: 6px;
+}
+
+.input-hint {
+    color: var(--muted-foreground);
+    font-size: 12px;
+    margin-top: 6px;
+}
+
+/* ===========================================================
  *  Brand monogram badge
  * =========================================================== */
 
