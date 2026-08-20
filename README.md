@@ -25,7 +25,7 @@
 
 ## What is this?
 
-A Smoo AI Rust client (smooblue, observability-studio, `th`, `th admin`, …) typically needs the same three things:
+A Smoo AI Rust client (smooblue, observability-studio, `th`, `smoo admin`, …) typically needs the same three things:
 
 1. **Design tokens + monogram** — so the UI looks like Smoo AI.
 2. **Auth** — Supabase user OAuth (browser login), email+password, session refresh, AND M2M `client_credentials` grant (service accounts), with one shared on-disk `CredentialsStore`.

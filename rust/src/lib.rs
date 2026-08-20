@@ -4,7 +4,7 @@
 //! design system primitives, auth flows, and LLM session plumbing that
 //! every SmooAI Rust app needs identically. Consumed by `smooblue`
 //! (Dioxus desktop), `observability-studio` (Dioxus viewer), `th` and
-//! `th admin` (the Smooth CLI), and any future Rust client.
+//! `smoo admin` (the Smooth CLI), and any future Rust client.
 //!
 //! Replaces the standalone `smooai-ui` crate (which only carried the
 //! `ui` slice) by adding `auth` and `llm` modules behind feature
