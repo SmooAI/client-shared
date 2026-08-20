@@ -10,7 +10,7 @@
 //! exchange returns a **new** refresh_token, the old one is
 //! revoked. Callers MUST persist the new token (and the new
 //! `expires_at`) — using a stale refresh_token will 400 with
-//! `invalid_grant`, at which point the user has to `th auth login`
+//! `invalid_grant`, at which point the user has to `smoo auth login`
 //! again. The 30-day refresh lifetime is per-session, not
 //! per-token — staying continuously active extends indefinitely.
 

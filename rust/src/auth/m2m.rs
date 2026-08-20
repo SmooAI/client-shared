@@ -2,7 +2,7 @@
 //!
 //! 1. User creates an API key in the smooai web app → receives a
 //!    `client_id` + `client_secret` pair.
-//! 2. `th api login` POSTs those to `https://auth.smoo.ai/token` with
+//! 2. `smoo auth login --m2m` POSTs those to `https://auth.smoo.ai/token` with
 //!    `grant_type=client_credentials` (form-urlencoded, per RFC 6749).
 //! 3. The token endpoint returns
 //!    `{access_token, token_type: "Bearer", expires_in}`. We persist
