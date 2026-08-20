@@ -1,0 +1,56 @@
+name: Rust
+
+# This repo shipped with no CI at all — `.github/` held only banner images —
+# so `rust/src/auth/refresh.rs` could sit for weeks as 174 lines that never
+# compiled (no `mod refresh;`), and the design tokens could drift from the CSS
+# unnoticed. Every check below exists because something got through without it.
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  rust:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: rust
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Format check
+        run: cargo fmt --check
+
+      # `--all-targets` so tests and examples are linted too; `-p`-scoped or
+      # target-less clippy silently skips test code.
+      - name: Clippy (default features — the no_std `ui` build)
+        run: cargo clippy --all-targets -- -D warnings
+
+      - name: Clippy (all features)
+        run: cargo clippy --all-targets --all-features -- -D warnings
+
+      # Run BOTH feature sets: the `ui` tests are the only ones in the default
+      # build, and the `auth` tests only exist behind the feature — running one
+      # configuration would report a green suite that never touched half the crate.
+      - name: Test (default features)
+        run: cargo test
+
+      - name: Test (all features)
+        run: cargo test --all-features
+
+  module-tree:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Catches the `refresh.rs` class: a .rs file on disk that no `mod`
+      # declaration reaches, so it never compiles and no other check sees it.
+      - name: Every .rs file is reachable from the module tree
+        run: python3 scripts/check-module-tree.py

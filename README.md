@@ -21,7 +21,7 @@
 
 ---
 
-> **Every Smoo AI Rust client needs the same three things — so they live in one crate.** Design tokens + the smoo monogram (`ui`), the full Supabase auth story — browser OAuth with PKCE, email+password, session refresh, M2M `client_credentials` — with a shared 0600 on-disk credential store (`auth`), and an LLM session exchange (`llm`, **stub today**). One Rust crate, feature-gated so the bare `ui` build stays `no_std` with zero dependencies. Consumed in production by the [`th` CLI](https://github.com/SmooAI/smooth). **Rust-only today; not yet on crates.io** — npm / NuGet / PyPI siblings are planned, not built.
+> **Every Smoo AI Rust client needs the same three things — so they live in one crate.** Design tokens + the smoo monogram (`ui`), the full Supabase auth story — browser OAuth with PKCE, email+password, session refresh, M2M `client_credentials` — with a shared 0600 on-disk credential store (`auth`), One Rust crate, feature-gated so the bare `ui` build stays `no_std` with zero dependencies. Consumed in production by the [`th` CLI](https://github.com/SmooAI/smooth). **Rust-only today; not yet on crates.io** — npm / NuGet / PyPI siblings are planned, not built.
 
 ## What is this?
 
@@ -29,9 +29,9 @@ A Smoo AI Rust client (smooblue, observability-studio, `th`, `smoo admin`, …) 
 
 1. **Design tokens + monogram** — so the UI looks like Smoo AI.
 2. **Auth** — Supabase user OAuth (browser login), email+password, session refresh, AND M2M `client_credentials` grant (service accounts), with one shared on-disk `CredentialsStore`.
-3. **LLM access** — exchanging a user session JWT for an org-scoped `llm.smoo.ai` bearer. *(Not implemented yet — see [Honest status](#honest-status).)*
+3. **LLM access** — exchanging a user session JWT for an org-scoped `llm.smoo.ai` bearer. *(Not built — there is deliberately no feature flag for it yet; see [Honest status](#honest-status).)*
 
-Each of these has been re-implemented in every consumer at least once. This crate makes them one dependency. It absorbs the standalone [`SmooAI/ui`](https://github.com/SmooAI/ui) crate: `ui` is one module among siblings (`auth`, `llm`) — same constants, same paths, byte-identical `shared/` sources.
+Each of these has been re-implemented in every consumer at least once. This crate makes them one dependency. It absorbs the standalone [`SmooAI/ui`](https://github.com/SmooAI/ui) crate: `ui` is one module alongside `auth` — same constants, same paths. This repo's `shared/` is the **source of truth** for the design system; SmooAI/ui carries a copy, and a CI gate there fails if the two ever diverge.
 
 ```mermaid
 %%{init: {'theme':'base','themeVariables':{
@@ -42,7 +42,6 @@ flowchart LR
   subgraph CRATE["smooai-client-shared"]
     UI["ui (default)<br/>STYLES · MONOGRAM_SVG · tokens::*<br/>zero deps · no_std"]
     AUTH["auth (feature)<br/>oauth · password · refresh · m2m<br/>CredentialsStore (0600)"]
-    LLM["llm (feature)<br/>STUB — pending"]
   end
   AUTH -->|"PKCE localhost callback"| SB[("Supabase<br/>/auth/v1")]
   AUTH -->|"client_credentials"| TOK[("auth.smoo.ai/token")]
@@ -162,15 +161,16 @@ smooai-client-shared = { git = "https://github.com/SmooAI/client-shared.git", fe
 | --- | --- | --- | --- |
 | `ui` (default) | `STYLES`, `MONOGRAM_SVG`, `tokens::*` | nothing — `no_std` | ✅ working |
 | `auth` | Supabase OAuth + password + refresh, M2M, `CredentialsStore` | `tokio`, `reqwest`, `axum`, `serde`, … | ✅ working, 28 unit tests |
-| `llm` | JWT → `llm.smoo.ai` org-session exchange | (implies `auth`) | 🚧 **stub — compiles, no usable surface** (pearl th-f7b20f) |
 
-Run the tests yourself — 32 unit tests across `ui` + `auth` (OAuth callback/PKCE, token rotation, store round-trips, permission bits):
+An `llm` feature (JWT → `llm.smoo.ai` org-session exchange, pearl th-f7b20f) is **planned and deliberately absent**. It previously existed as a flag over a six-line doc-comment module: `--features llm` compiled and produced nothing, which is worse than an honest gap. It returns when there is code behind it.
+
+Run the tests yourself — 34 unit tests across `ui` + `auth` (OAuth callback/PKCE, token rotation, store round-trips, permission bits, token/CSS drift):
 
 ```bash
-cd rust && cargo test --features auth,llm
+cd rust && cargo test --all-features
 ```
 
-There is no CI in this repo yet — run the tests locally before merging.
+CI (`.github/workflows/rust.yml`) runs `cargo fmt --check`, `clippy --all-targets -D warnings` and the test suite in **both** feature configurations — the default `no_std` `ui` build and `--all-features` — plus a module-tree check that fails if any `.rs` file is unreachable from a `mod` declaration.
 
 ---
 
@@ -178,9 +178,9 @@ There is no CI in this repo yet — run the tests locally before merging.
 
 | Surface | Status |
 | --- | --- |
-| **Rust `ui`** | ✅ Working — byte-identical to the `smooai-ui` crate's surface; drift-tested against `shared/styles.css` |
+| **Rust `ui`** | ✅ Working — the `tokens` constants are **generated** from `shared/tokens.json` at build time, and cross-checked against `shared/styles.css` in both directions (every token matches its custom property; every colour the CSS declares has a token) |
 | **Rust `auth`** | ✅ Working — OAuth PKCE localhost-callback (387 LOC), password grant, refresh with rotation, M2M, 0600 `CredentialsStore`; 28 unit tests; consumed by the `th` CLI in production |
-| **Rust `llm`** | 🚧 **Stub** — the feature flag exists and compiles, but the module is a doc-comment placeholder. Building with `--features llm` gives you no usable API today |
+| **Rust `llm`** | ❌ Not built — no module, no feature flag. Pearl th-f7b20f tracks it |
 | **crates.io** | ❌ Not published — git dependency is the only install path |
 | **npm / NuGet / PyPI** | 📦 Planned, no code — the `src/`, `dotnet/`, `python/` directories in the layout below don't exist yet |
 
@@ -191,14 +191,15 @@ client-shared/
 ├── shared/                # cross-language source of truth
 │   ├── styles.css         # OKLCH tokens + base component CSS
 │   ├── monogram.svg       # smoo monogram
-│   └── tokens.json        # tokens as plain JSON (no consumer yet)
+│   ├── tokens.json        # THE token source — the Rust `tokens` module is generated from it
+│   ├── tokens_codegen.rs  # generator, run from rust/build.rs
+│   └── tokens_css_check.rs # asserts tokens.json <-> styles.css agree, both ways
 └── rust/                  # smooai-client-shared (git dependency; crates.io planned)
     ├── Cargo.toml
     └── src/
         ├── lib.rs
         ├── ui/            # lifted verbatim from smooai-ui
-        ├── auth/          # oauth · password · refresh · m2m · storage  (feature = "auth")
-        └── llm/           # STUB — pending pearl th-f7b20f             (feature = "llm")
+        └── auth/          # oauth · password · refresh · m2m · storage  (feature = "auth")
 ```
 
 npm (`src/`), NuGet (`dotnet/`), and PyPI (`python/`) packages are roadmap, not directories.
@@ -240,7 +241,7 @@ The `ui` module is API-compatible with `smooai-ui`: same constants, same paths, 
 
 ## 🤝 Contributing
 
-PRs welcome. `cd rust && cargo test --features auth,llm` must pass; keep the bare `ui` build zero-dep and `no_std`, and gate anything heavier behind a feature flag.
+PRs welcome. `cd rust && cargo test --all-features` must pass; keep the bare `ui` build zero-dep and `no_std`, and gate anything heavier behind a feature flag.
 
 ## 📄 License
 
