@@ -31,15 +31,18 @@ jobs:
 
       # `--all-targets` so tests and examples are linted too; `-p`-scoped or
       # target-less clippy silently skips test code.
-      - name: Clippy (default features — the no_std `ui` build)
+      # Default features are now empty (`auth` is opt-in), so this lints the
+      # bare crate; the all-features run below is the one that covers auth.
+      - name: Clippy (default features)
         run: cargo clippy --all-targets -- -D warnings
 
       - name: Clippy (all features)
         run: cargo clippy --all-targets --all-features -- -D warnings
 
-      # Run BOTH feature sets: the `ui` tests are the only ones in the default
-      # build, and the `auth` tests only exist behind the feature — running one
-      # configuration would report a green suite that never touched half the crate.
+      # Run BOTH feature sets. Every test lives behind `auth`, so the default
+      # run reports "0 passed; ok" — which is exactly why the all-features run
+      # below has to exist: a single default-only run would be a green suite
+      # that executed nothing.
       - name: Test (default features)
         run: cargo test
 

@@ -10,40 +10,27 @@ keywords = ["smooai", "design-system", "auth", "client"]
 categories = ["gui", "authentication", "config"]
 readme = "README.md"
 authors = ["SmooAI <brent@smoo.ai>"]
-# Cargo can't pull files from outside the package root by default; we
-# explicitly enumerate the cross-language `shared/` assets we want
-# included so `cargo package` produces a self-contained tarball.
 include = [
     "Cargo.toml",
     "README.md",
-    "build.rs",
     "src/**/*.rs",
-    "../shared/styles.css",
-    "../shared/monogram.svg",
-    "../shared/tokens.json",
-    "../shared/tokens_codegen.rs",
-    "../shared/tokens_css_check.rs",
     "../LICENSE",
 ]
 
 [features]
-# Default to the lightweight `ui` module so existing smooai-ui
-# consumers (smooblue, observability-studio) get the same dependency
-# tree they had before — no tokio, no reqwest, still no_std-friendly.
-# Opt into `auth` only when needed.
-default = ["ui"]
-ui = []
+# `auth` is the crate's only surface and its one consumer (the `th` CLI)
+# always asks for it — but it stays opt-in rather than default so the heavy
+# tree (tokio, reqwest, axum) is never pulled in by accident.
+#
+# There was a `ui` feature here carrying the design system. Nothing ever
+# imported `client_shared::ui`; SmooAI/ui owns that and is what smooblue and
+# observability-studio actually depend on. Keeping a second copy behind a
+# feature flag only created a drift surface, which had already silently
+# shipped a broken monogram.
 auth = ["dep:tokio", "dep:reqwest", "dep:serde", "dep:serde_json", "dep:url", "dep:axum", "dep:anyhow", "dep:chrono", "dep:dirs-next", "dep:webbrowser", "dep:rand", "dep:base64", "dep:sha2"]
 
-[build-dependencies]
-# Build-script only: parses shared/tokens.json to generate the `tokens`
-# module. Build dependencies are host-side and never reach consumers, so the
-# bare `ui` build stays zero-dependency and `no_std`.
-serde_json = "1"
-
 [dependencies]
-# Heavy deps gated behind the `auth` feature so the bare `ui`
-# build stays no_std-compatible and zero-dep.
+# All gated behind the `auth` feature.
 tokio = { version = "1", features = ["macros", "rt-multi-thread", "fs", "net", "sync", "time"], optional = true }
 reqwest = { version = "0.12", features = ["json"], optional = true }
 serde = { version = "1", features = ["derive"], optional = true }
