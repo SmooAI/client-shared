@@ -1,56 +1,41 @@
 //! # smooai-client-shared
 //!
-//! Cross-runtime shared library for SmooAI Rust clients — the home for
-//! design system primitives, auth flows, and LLM session plumbing that
-//! every SmooAI Rust app needs identically. Consumed by `smooblue`
-//! (Dioxus desktop), `observability-studio` (Dioxus viewer), `th` and
-//! `smoo admin` (the Smooth CLI), and any future Rust client.
-//!
-//! Replaces the standalone `smooai-ui` crate (which only carried the
-//! `ui` slice) by adding an `auth` module behind a feature flag. The bare `default-features = ["ui"]` build stays
-//! `no_std`-compatible with zero runtime dependencies — same shape as
-//! the old `smooai-ui` so existing consumers don't inherit any new
-//! tree.
+//! Auth primitives shared across SmooAI's Rust clients — Supabase user
+//! OAuth (localhost-callback flow with PKCE), the M2M
+//! `client_credentials` grant, refresh-token rotation, and an on-disk
+//! `CredentialsStore`. Consumed by `th` and `smoo admin` (the Smooth
+//! CLI).
 //!
 //! ## Feature flags
 //!
-//! - `ui` (default) — design tokens, base CSS, monogram. Zero deps,
-//!   `no_std`.
-//! - `auth` — Supabase user OAuth (localhost-callback flow), M2M
-//!   `client_credentials` grant, refresh-token rotation, on-disk
-//!   `CredentialsStore`. Pulls in `tokio`, `reqwest`, `serde`, `axum`.
+//! - `auth` — everything above. Pulls in `tokio`, `reqwest`, `serde`,
+//!   `axum`. Not a default: the dependency tree is heavy enough that it
+//!   should be asked for explicitly.
+//!
+//! ## What happened to the `ui` module
+//!
+//! This crate used to carry a copy of the design system (tokens, base
+//! CSS, monogram) and describe itself as `smooai-ui`'s successor. That
+//! migration was never finished, and an org-wide search found **nothing
+//! importing `smooai_client_shared::ui`** — every real consumer of the
+//! design system depends on [`SmooAI/ui`](https://github.com/SmooAI/ui)
+//! directly (smooblue, observability-studio), while this crate's only
+//! consumer asks for `auth` and never touched it.
+//!
+//! Two copies of the same files is a drift surface, and it had already
+//! drifted: this crate spent weeks serving a monogram missing its inner
+//! 'S' because a fix in SmooAI/ui never crossed. The copy is gone;
+//! `SmooAI/ui` owns the design system.
 //!
 //! An `llm` feature (JWT → `llm.smoo.ai` org-scoped session exchange)
 //! is planned under pearl th-f7b20f. It is deliberately **absent**
 //! rather than stubbed: a feature flag that compiles to an empty
 //! module advertises a capability that does not exist. It comes back
 //! when there is something behind it.
-//!
-//! ## Migrating from `smooai-ui`
-//!
-//! Replace
-//!
-//! ```toml
-//! smooai-ui = "0.1"
-//! ```
-//!
-//! with
-//!
-//! ```toml
-//! smooai-client-shared = "0.1"
-//! ```
-//!
-//! and swap `smooai_ui::` → `smooai_client_shared::ui::` in your
-//! imports. Everything in the `ui` module is re-exported at the same
-//! path it lived at under `smooai_ui::` (e.g. `STYLES`,
-//! `MONOGRAM_SVG`, `tokens::*`).
 
 #![cfg_attr(not(feature = "auth"), no_std)]
 #![doc(html_root_url = "https://docs.rs/smooai-client-shared/0.1.0")]
 #![warn(missing_docs)]
-
-#[cfg(feature = "ui")]
-pub mod ui;
 
 #[cfg(feature = "auth")]
 pub mod auth;
